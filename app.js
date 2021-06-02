@@ -9,12 +9,10 @@ exports.handler = async (event) => {
     try {
         // Make sure a domain and job id have been provided
         if (!event?.queryStringParameters?.domain || !event?.queryStringParameters?.jobId) {
-            response.statusCode = 422;
-            throw new Error('No RMK instance domain and/or no jobId given');
+            throw new LambdaException('No RMK instance domain and/or no jobId given', 422);
         }
         else if (!/^\d+$/.test(event.queryStringParameters.jobId)) {
-            response.statusCode = 422;
-            throw new Error('jobId may only contain numbers');
+            throw new LambdaException('jobId may only contain numbers', 422);
         }
 
         const domain = event.queryStringParameters.domain;
@@ -32,13 +30,13 @@ exports.handler = async (event) => {
             reqId: reqId
         });
     } catch (err) {
-        if (err.message == 'No RMK instance found at given domain') {
-            response.statusCode = 422;
+        // Use status code from error or fallback to returning HTTP/500
+        if (err.statusCode) {
+            response.statusCode = err.statusCode;
         }
-        else if (err.message == 'No req id returned by RMK instance') {
-            response.statusCode = 404;
+        else {
+            response.statusCode = 500;
         }
-        if (!response.statusCode) response.statusCode = 500;
         response.body = JSON.stringify({ errors: [err.message] });
     }
 
@@ -54,7 +52,7 @@ async function fetchRmkDetails(domain) {
     const companyIdResult = companyIdRegex.exec(html);
 
     if (!companyIdResult) {
-        throw Error('No RMK instance found at given domain');
+        throw new LambdaException('No RMK instance found at given domain', 422);
     }
 
     // Extract crsf token
@@ -62,7 +60,7 @@ async function fetchRmkDetails(domain) {
     const tokenResult = tokenRegex.exec(html);
 
     if (!tokenResult) {
-        throw Error('Failed to find X-CSRF-Token');
+        throw new LambdaException('Failed to find X-CSRF-Token');
     }
 
     return {
@@ -93,13 +91,20 @@ async function getReqId(domain, rmkDetails, jobId) {
     });
 
     if (resp.status == 410) {
-        throw Error('No req id returned by RMK instance');
+        throw new LambdaException('No req id returned by RMK instance', 404);
     }
     else if (resp.status != 200) {
-        throw Error('Failed to retrieve req id');
+        throw new LambdaException('Failed to retrieve req id');
     }
 
     const payload = await resp.json();
 
     return payload.career_job_req_id;
+}
+
+function LambdaException(message, statusCode = 500) {
+    const error = new Error(message);
+    error.statusCode = statusCode;
+
+    return error;
 }
