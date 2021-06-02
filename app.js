@@ -35,6 +35,9 @@ exports.handler = async (event) => {
         if (err.message == 'No RMK instance found at given domain') {
             response.statusCode = 422;
         }
+        else if (err.message == 'No req id returned by RMK instance') {
+            response.statusCode = 404;
+        }
         if (!response.statusCode) response.statusCode = 500;
         response.body = JSON.stringify({ errors: [err.message] });
     }
@@ -88,6 +91,13 @@ async function getReqId(domain, rmkDetails, jobId) {
         body: body,
         headers: headers
     });
+
+    if (resp.status == 410) {
+        throw Error('No req id returned by RMK instance');
+    }
+    else if (resp.status != 200) {
+        throw Error('Failed to retrieve req id');
+    }
 
     const payload = await resp.json();
 
