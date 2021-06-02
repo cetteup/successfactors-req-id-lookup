@@ -12,6 +12,10 @@ exports.handler = async (event) => {
             response.statusCode = 422;
             throw new Error('No RMK instance domain and/or no jobId given');
         }
+        else if (!/^\d+$/.test(event.queryStringParameters.jobId)) {
+            response.statusCode = 422;
+            throw new Error('jobId may only contain numbers');
+        }
 
         const domain = event.queryStringParameters.domain;
         const jobId = event.queryStringParameters.jobId;
