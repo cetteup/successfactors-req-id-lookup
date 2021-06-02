@@ -103,8 +103,17 @@ async function getReqId(domain, rmkDetails, jobId) {
 }
 
 function LambdaException(message, statusCode = 500) {
-    const error = new Error(message);
-    error.statusCode = statusCode;
+    this.message = message;
+    this.statusCode = statusCode;
 
-    return error;
+    if ('captureStackTrace' in Error) {
+        Error.captureStackTrace(this, LambdaException);
+    }
+    else {
+        this.stack = (new Error()).stack;
+    }
 }
+
+LambdaException.prototype = Object.create(Error.prototype);
+LambdaException.prototype.name = 'LambdaException';
+LambdaException.prototype.constructor = LambdaException;
