@@ -1,0 +1,36 @@
+{
+  "name": "successfactors-req-id-lookup",
+  "version": "1.0.0",
+  "description": "AWS Lambda function to lookup the requisition id based on a job id of a SuccessFactors Recruiting Marketing job posting",
+  "private": true,
+  "main": "app.js",
+  "scripts": {},
+  "keywords": [
+    "aws",
+    "lambda",
+    "successfactors",
+    "rmk",
+    "recruiting",
+    "marketing",
+    "job",
+    "id",
+    "req",
+    "id"
+  ],
+  "author": "cetteup <me@cetteup.com>",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cetteup/successfactors-req-id-lookup.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cetteup/successfactors-req-id-lookup/issues"
+  },
+  "homepage": "https://github.com/cetteup/successfactors-req-id-lookup",
+  "devDependencies": {
+    "eslint": "^7.27.0"
+  }
+}
